@@ -13,3 +13,5 @@
 1. Machine Learning by Andrew Ng - https://www.coursera.org/learn/machine-learning
 2. Scikit-learn (off-the-shelf machine learning algorithms) - https://www.youtube.com/watch?v=HC0J_SPm9co
 3. Tensorflow (Google's machine learning library) - https://developers.google.com/machine-learning/crash-course/ml-intro
+
+Project - https://www.kaggle.com/c/titanic

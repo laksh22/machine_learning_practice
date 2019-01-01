@@ -14,5 +14,8 @@
 2. Scikit-learn (off-the-shelf machine learning algorithms) - https://www.youtube.com/watch?v=HC0J_SPm9co
 3. Tensorflow (Google's machine learning library) - https://developers.google.com/machine-learning/crash-course/ml-intro
 
+#Book
+1. http://index-of.es/Varios-2/Hands%20on%20Machine%20Learning%20with%20Scikit%20Learn%20and%20Tensorflow.pdf
+
 ## Projects
 Titanic Kaggle Competition- https://www.kaggle.com/c/titanic

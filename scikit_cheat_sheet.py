@@ -244,3 +244,45 @@ svm_reg.fit(X, y)
 from sklearn.svm import SVR
 svm_poly_reg = SVR(kernel="poly", degree=2, C=100, epsilon=0.1)
 svm_poly_reg.fit(X, y)
+
+
+
+
+
+##Decision Trees##
+#----------  Classification ----------#
+#%%
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+
+iris = load_iris()
+
+X = iris.data[:, 2:] # petal length and width
+y = iris.target
+
+tree_clf = DecisionTreeClassifier(max_depth=2)
+tree_clf.fit(X, y)
+
+#Visualizing the decision tree
+#%%
+from sklearn.tree import export_graphviz
+
+export_graphviz(
+        tree_clf,
+        out_file=image_path("iris_tree.dot"),
+        feature_names=iris.feature_names[2:],
+        class_names=iris.target_names,
+        rounded=True,
+        filled=True
+)
+#.dot --> .png using $ dot -Tpng iris_tree.dot -o iris_tree.png
+
+#Predicting
+#%%
+tree_clf.predict_proba([[5, 1.5]]), tree_clf.predict([[5, 1.5]])
+
+#----------  Regression ----------#
+#%%
+from sklearn.tree import DecisionTreeRegressor
+tree_reg = DecisionTreeRegressor(max_depth=2)
+tree_reg.fit(X, y)

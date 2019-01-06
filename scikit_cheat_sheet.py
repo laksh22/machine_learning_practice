@@ -286,3 +286,107 @@ tree_clf.predict_proba([[5, 1.5]]), tree_clf.predict([[5, 1.5]])
 from sklearn.tree import DecisionTreeRegressor
 tree_reg = DecisionTreeRegressor(max_depth=2)
 tree_reg.fit(X, y)
+
+
+
+
+
+
+##Ensemble Learning##
+#----------  Voting Classifier ----------#
+#%%
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+
+log_clf = LogisticRegression()
+rnd_clf = RandomForestClassifier()
+svm_clf = SVC(probability=True)
+
+voting_clf = VotingClassifier(
+        estimators=[('lr', log_clf), ('rf', rnd_clf), ('svc', svm_clf)],
+        voting='soft')
+voting_clf.fit(X_train, y_train)
+
+#Checking accuracy of the above ensemble
+#%%
+from sklearn.metrics import accuracy_score
+for clf in (log_clf, rnd_clf, svm_clf, voting_clf):
+        clf.fit(X_train, y_train)
+        y_pred = clf.predict(X_test)
+        print(clf.__class__.__name__, accuracy_score(y_test, y_pred))
+
+#----------  Bagging and Pasting ----------#
+#Baging --> with replacement
+#Pasting --> without replacement
+#%%
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+bag_clf = BaggingClassifier(
+        DecisionTreeClassifier(), n_estimators=500,
+        max_samples=100, bootstrap=True, n_jobs=-1, oob_score=True)
+bag_clf.fit(X_train, y_train)
+y_pred = bag_clf.predict(X_test)
+#For pasting, set bootstrap=False
+#n_jobs is the number of CPU cores to use. -1 means all.
+#oob_score tests the classifier on out-of-bag values --> bag_clf.oob_score_
+#To get probabilities of each training instance, --> bag_clf.oob_decision_function_
+#max_features and bootstrap_features can also be used
+
+#----------  Random Forest Classifier ----------#
+#RandromForestRegressor can also be used
+#%%
+from sklearn.ensemble import RandomForestClassifier
+rnd_clf = RandomForestClassifier(n_estimators=500, max_leaf_nodes=16, n_jobs=-1)
+rnd_clf.fit(X_train, y_train)
+y_pred_rf = rnd_clf.predict(X_test)
+#ExtraTreesClassifier also available
+
+#----------  Feature Importance ----------#
+#%%
+from sklearn.datasets import load_iris
+iris = load_iris()
+rnd_clf = RandomForestClassifier(n_estimators=500, n_jobs=-1)
+rnd_clf.fit(iris["data"], iris["target"])
+for name, score in zip(iris["feature_names"], rnd_clf.feature_importances_):
+        print(name, score)
+
+#----------  Boosting ----------#
+##AdaBoost
+#%%
+from sklearn.ensemble import AdaBoostClassifier
+ada_clf = AdaBoostClassifier(
+        DecisionTreeClassifier(max_depth=1), n_estimators=200,
+        algorithm="SAMME.R", learning_rate=0.5)
+ada_clf.fit(X_train, y_train)
+
+##Gradient Boosting
+#%%
+from sklearn.ensemble import GradientBoostingRegressor
+gbrt = GradientBoostingRegressor(max_depth=2, n_estimators=3, learning_rate=1.0)
+gbrt.fit(X, y)
+
+##Gradient boosting with ideal number of trees
+#%%
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
+X_train, X_val, y_train, y_val = train_test_split(X, y)
+
+gbrt = GradientBoostingRegressor(max_depth=2, n_estimators=120)
+gbrt.fit(X_train, y_train)
+
+errors = [mean_squared_error(y_val, y_pred)
+        for y_pred in gbrt.staged_predict(X_val)]
+bst_n_estimators = np.argmin(errors)
+
+gbrt_best = GradientBoostingRegressor(max_depth=2,n_estimators=bst_n_estimators)
+gbrt_best.fit(X_train, y_train)
+#Early stopping can also be used
+#GradientBoostingRegressor has a subsample hyperparameter (0 to 1).
+
+#----------  Stacking ----------#
+#https://github.com/viisar/brew

@@ -390,3 +390,81 @@ gbrt_best.fit(X_train, y_train)
 
 #----------  Stacking ----------#
 #https://github.com/viisar/brew
+
+
+
+
+
+##Dimensionality Reduction##
+#----------  Principal Component Analysis ----------#
+#%%
+from sklearn.decomposition import PCA
+pca = PCA(n_components = 2)
+X2D = pca.fit_transform(X)
+pca.components_
+pca.explained_variance_ratio_
+
+#To choose correct number of dimensions, set n_components to a float between 0 and 1
+#0.95 would mean preserving 95% variance
+
+#----------  Recovering original data from PCA ----------#
+#%%
+pca = PCA(n_components = 154)
+X_reduced = pca.fit_transform(X_train)
+X_recovered = pca.inverse_transform(X_reduced)
+
+#----------  Incremental PCA ----------#
+#%%
+from sklearn.decomposition import IncrementalPCA
+
+n_batches = 100
+inc_pca = IncrementalPCA(n_components=154)
+for X_batch in np.array_split(X_train, n_batches):
+        inc_pca.partial_fit(X_batch)
+        X_reduced = inc_pca.transform(X_train)
+
+#----------  Randomized PCA ----------#
+#%%
+rnd_pca = PCA(n_components=154, svd_solver="randomized")
+X_reduced = rnd_pca.fit_transform(X_train)
+
+#----------  Kernel PCA ----------#
+#%%
+from sklearn.decomposition import KernelPCA
+rbf_pca = KernelPCA(n_components = 2, kernel="rbf", gamma=0.04)
+X_reduced = rbf_pca.fit_transform(X)
+
+#---------- Selecting Kernel and Hyperparameters  ----------#
+#%%
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+clf = Pipeline([
+        ("kpca", KernelPCA(n_components=2)),
+        ("log_reg", LogisticRegression())
+        ])
+param_grid = [{
+        "kpca__gamma": np.linspace(0.03, 0.05, 10),
+        "kpca__kernel": ["rbf", "sigmoid"]
+        }]
+grid_search = GridSearchCV(clf, param_grid, cv=3)
+grid_search.fit(X, y)
+
+print(grid_search.best_params_)
+
+#---------- Computing reconstruction pre-image error  ----------#
+#%%
+rbf_pca = KernelPCA(n_components = 2, kernel="rbf", gamma=0.0433,
+        fit_inverse_transform=True)
+#fit_inverse_transform is responsible for this
+X_reduced = rbf_pca.fit_transform(X)
+X_preimage = rbf_pca.inverse_transform(X_reduced)
+
+from sklearn.metrics import mean_squared_error
+mean_squared_error(X, X_preimage)
+
+#---------- LLE  ----------#
+from sklearn.manifold import LocallyLinearEmbedding
+
+lle = LocallyLinearEmbedding(n_components=2, n_neighbors=10)
+X_reduced = lle.fit_transform(X)
